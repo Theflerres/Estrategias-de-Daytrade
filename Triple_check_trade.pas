@@ -1,65 +1,41 @@
 var
-
-mm9, mm21 : float;
-
-linhaVwap : float;
-
-valorRsi : float;
-
-forcaCompra, forcaVenda : boolean;
-
+  mm9, mm21 : float;
+  linhaVwap : float;
+  valorRsi : float;
+  cruzouCompra, cruzouVenda : boolean;
+  cenarioFavoravelCompra, cenarioFavoravelVenda : boolean;
 begin
+  // --- 1. INDICADORES BÁSICOS ---
+  mm9 := Media(9, Close);
+  mm21 := Media(21, Close);
+  linhaVwap := VWAP(1); 
+  valorRsi := RSI(14, 0);
 
-// --- 1. INDICADORES BÁSICOS ---
+  // --- 2. GATILHOS (O EVENTO EXATO) ---
+  // Verifica se o cruzamento acabou de acontecer no candle fechado [1]
+  cruzouCompra := (mm9[1] > mm21[1]) and (mm9[2] <= mm21[2]);
+  cruzouVenda  := (mm9[1] < mm21[1]) and (mm9[2] >= mm21[2]);
 
-mm9 := Media(9, Close);
+  // --- 3. FILTROS (O CENÁRIO ESTÁ ALINHADO?) ---
+  // Garante que o cruzamento ocorreu do lado certo da VWAP e com momentum (RSI)
+  cenarioFavoravelCompra := (Close[1] > linhaVwap[1]) and (valorRsi[1] > 50);
+  cenarioFavoravelVenda  := (Close[1] < linhaVwap[1]) and (valorRsi[1] < 50);
 
-mm21 := Media(21, Close);
-
-linhaVwap := VWAP(1); // O Muro Institucional
-
-valorRsi := RSI(14, 0);
-
-// --- 2. GATILHOS (MAIS SOLTOS E FLUIDOS) ---
-
-// COMPRA: Acima da VWAP, MM9 virada pra cima da MM21, RSI saudável, e o candle atual fechou positivo.
-
-forcaCompra := (Close > linhaVwap) and (mm9 > mm21) and (valorRsi < 70) and (Close > Open);
-
-// VENDA: Abaixo da VWAP, MM9 virada pra baixo da MM21, RSI saudável, e o candle atual fechou negativo.
-
-forcaVenda := (Close < linhaVwap) and (mm9 < mm21) and (valorRsi > 30) and (Close < Open);
-
-// --- 3. COLORINDO E ALERTANDO ---
-
-if forcaCompra then
-
-begin
-
-PaintBar(clGreen);
-
-Alert(clGreen); // Dispara o popup verde no Gerenciador de Alarmes
-
-end
-
-else if forcaVenda then
-
-begin
-
-PaintBar(clRed);
-
-Alert(clRed); // Dispara o popup vermelho no Gerenciador de Alarmes
-
-end
-
-// Alerta de exaustão extrema (Ajustado para 80/20 para diminuir o ruído)
-
-else if (valorRsi >= 80) or (valorRsi <= 20) then
-
-begin
-
-PaintBar(clYellow); // Apenas pinta de amarelo na tela
-
-end;
-
+  // --- 4. COLORINDO E ALERTANDO ---
+  // Só vai disparar 1 única vez por movimento (no candle do cruzamento)
+  if cruzouCompra and cenarioFavoravelCompra then
+  begin
+    PaintBar(clGreen);
+    Alert(clGreen); 
+  end
+  else if cruzouVenda and cenarioFavoravelVenda then
+  begin
+    PaintBar(clRed);
+    Alert(clRed); 
+  end
+  // Alerta de exaustão dinâmico (Mantido para avisar se o preço esticou demais)
+  else if (valorRsi >= 80) or (valorRsi <= 20) then
+  begin
+    PaintBar(clYellow); 
+  end;
 end;
