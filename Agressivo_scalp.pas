@@ -16,7 +16,7 @@ begin
   // BLOCO 2: GATILHOS E FILTROS (O Tiro Rápido)
   // =========================================================================
   
-  // O cruzamento precisa ser no candle atual, com o corpo do candle confirmando a força
+  // O cruzamento precisa ser no candle atual, com o corpo confirmando a força
   gatilhoCompra := (ema3 > ema8) and (ema3[1] <= ema8[1]) and (Close > Open);
   gatilhoVenda  := (ema3 < ema8) and (ema3[1] >= ema8[1]) and (Close < Open);
 
@@ -30,13 +30,13 @@ begin
   
   if gatilhoCompra and cenarioCompra then
   begin
-    PaintBar(clCyan); // Azul claro para scalp de compra
-    Alert(clCyan);
+    PaintBar(clAqua); // clAqua é o Ciano/Azul Claro no NTSL
+    Alert(clAqua);
   end
   else if gatilhoVenda and cenarioVenda then
   begin
-    PaintBar(clMagenta); // Magenta para scalp de venda
-    Alert(clMagenta);
+    PaintBar(clFuchsia); // clFuchsia é o Magenta/Rosa no NTSL
+    Alert(clFuchsia);
   end;
 
 end;
